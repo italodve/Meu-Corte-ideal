@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
-
 export const metadata: Metadata = {
-  title: 'Meu Corte Ideal — descubra o corte perfeito para o seu rosto',
+  title: 'Meu Corte Ideal - descubra o corte perfeito para o seu rosto',
   description:
     'Envie uma selfie e descubra, com IA, quais cortes de cabelo combinam com o formato do seu rosto.',
 };
@@ -16,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
-      <body className="font-sans antialiased min-h-screen">{children}</body>
+    <html lang="pt-BR">
+      <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   );
 }

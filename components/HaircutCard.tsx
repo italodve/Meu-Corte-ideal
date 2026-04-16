@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import type { FaceShape, Gender } from '@/lib/faceShapes';
 import type { Haircut } from '@/lib/haircuts';
@@ -23,14 +24,12 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
   const cardRef = useRef<HTMLDivElement>(null);
   const triggeredRef = useRef(false);
 
-  // Reset when the key inputs change (e.g. toggling gender).
   useEffect(() => {
     triggeredRef.current = false;
     setImageSrc(null);
     setState('idle');
     setErrorMsg(null);
 
-    // Try localStorage synchronously.
     try {
       const cached = localStorage.getItem(storageKey(shape, gender, haircut.id));
       if (cached) {
@@ -39,11 +38,10 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
         triggeredRef.current = true;
       }
     } catch {
-      // ignore storage errors (private mode, disabled)
+      // ignore storage errors
     }
   }, [shape, gender, haircut.id]);
 
-  // Intersection observer to lazy-load when card enters viewport.
   useEffect(() => {
     if (!cardRef.current || triggeredRef.current) return;
 
@@ -80,9 +78,11 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
         if (!res.ok) {
           throw new Error(payload.error || 'Falha ao gerar imagem');
         }
+
         const dataUrl = `data:image/png;base64,${payload.imageBase64}`;
         setImageSrc(dataUrl);
         setState('ready');
+
         try {
           localStorage.setItem(storageKey(shape, gender, haircut.id), dataUrl);
         } catch {
@@ -90,9 +90,7 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
         }
       } catch (err) {
         console.error(err);
-        setErrorMsg(
-          err instanceof Error ? err.message : 'Erro ao gerar imagem',
-        );
+        setErrorMsg(err instanceof Error ? err.message : 'Erro ao gerar imagem');
         setState('error');
       }
     }
@@ -101,21 +99,21 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
   return (
     <div
       ref={cardRef}
-      className="rounded-2xl overflow-hidden bg-white shadow-sm border border-gray-200 flex flex-col"
+      className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
     >
-      <div className="relative aspect-square bg-gray-100 flex items-center justify-center">
+      <div className="relative flex aspect-square items-center justify-center bg-gray-100">
         {state === 'ready' && imageSrc ? (
-          <img
+          <Image
             src={imageSrc}
             alt={haircut.name}
-            className="w-full h-full object-cover"
+            fill
+            unoptimized
+            className="object-cover"
           />
         ) : state === 'error' ? (
           <div className="p-4 text-center text-sm text-gray-500">
-            <p>Não foi possível gerar a imagem.</p>
-            {errorMsg && (
-              <p className="mt-1 text-xs text-gray-400">{errorMsg}</p>
-            )}
+            <p>Nao foi possivel gerar a imagem.</p>
+            {errorMsg && <p className="mt-1 text-xs text-gray-400">{errorMsg}</p>}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-2 text-gray-400">
@@ -124,9 +122,9 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
           </div>
         )}
       </div>
-      <div className="p-4 flex-1 flex flex-col gap-1.5">
+      <div className="flex flex-1 flex-col gap-1.5 p-4">
         <h3 className="font-semibold text-gray-900">{haircut.name}</h3>
-        <p className="text-sm text-gray-600 leading-relaxed">
+        <p className="text-sm leading-relaxed text-gray-600">
           {haircut.description}
         </p>
       </div>

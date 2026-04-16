@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { loadFaceApi } from '@/lib/faceApi';
 import {
   classifyFaceShape,
@@ -18,7 +19,6 @@ export function FaceAnalyzer({
   onResult,
   onError,
 }: FaceAnalyzerProps) {
-  const imgRef = useRef<HTMLImageElement>(null);
   const [status, setStatus] = useState<
     'loading-models' | 'detecting' | 'done' | 'error'
   >('loading-models');
@@ -32,7 +32,7 @@ export function FaceAnalyzer({
         const faceapi = await loadFaceApi();
         if (cancelled) return;
 
-        const img = new Image();
+        const img = new window.Image();
         img.src = imageDataUrl;
         await new Promise<void>((resolve, reject) => {
           img.onload = () => resolve();
@@ -55,7 +55,7 @@ export function FaceAnalyzer({
 
         if (detections.length === 0) {
           onError(
-            'Não conseguimos detectar um rosto nessa foto. Tente uma selfie bem iluminada, de frente, sem óculos escuros.',
+            'Nao conseguimos detectar um rosto nessa foto. Tente uma selfie bem iluminada, de frente, sem oculos escuros.',
           );
           setStatus('error');
           return;
@@ -63,7 +63,7 @@ export function FaceAnalyzer({
 
         if (detections.length > 1) {
           onError(
-            'Detectamos mais de um rosto. Envie uma foto com apenas uma pessoa para uma análise precisa.',
+            'Detectamos mais de um rosto. Envie uma foto com apenas uma pessoa para uma analise precisa.',
           );
           setStatus('error');
           return;
@@ -76,7 +76,6 @@ export function FaceAnalyzer({
         }));
         const result = classifyFaceShape(points);
 
-        // Render annotated preview so the user sees what the model detected.
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
@@ -91,16 +90,16 @@ export function FaceAnalyzer({
             ctx.arc(pt.x, pt.y, ctx.lineWidth, 0, Math.PI * 2);
             ctx.fill();
           }
-          // Connect jaw line for a nicer visualisation.
+
           ctx.beginPath();
-          for (let i = 0; i <= 16; i++) {
+          for (let i = 0; i <= 16; i += 1) {
             if (i === 0) ctx.moveTo(points[i].x, points[i].y);
             else ctx.lineTo(points[i].x, points[i].y);
           }
           ctx.stroke();
         }
-        const annotated = canvas.toDataURL('image/jpeg', 0.9);
 
+        const annotated = canvas.toDataURL('image/jpeg', 0.9);
         setStatus('done');
         onResult(result, annotated);
       } catch (err) {
@@ -116,7 +115,7 @@ export function FaceAnalyzer({
       }
     }
 
-    run();
+    void run();
     return () => {
       cancelled = true;
     };
@@ -124,21 +123,24 @@ export function FaceAnalyzer({
 
   return (
     <div className="flex flex-col items-center gap-4 py-6">
-      <img
-        ref={imgRef}
-        src={imageDataUrl}
-        alt="Selfie para análise"
-        className="max-h-80 rounded-xl shadow-md"
-      />
+      <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-xl shadow-md">
+        <Image
+          src={imageDataUrl}
+          alt="Selfie para analise"
+          fill
+          unoptimized
+          className="object-contain"
+        />
+      </div>
       <div className="flex items-center gap-3 text-brand-700">
         <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand-300 border-t-brand-700" />
         <span className="font-medium">
           {status === 'loading-models'
-            ? 'Carregando modelos de detecção...'
+            ? 'Carregando modelos de deteccao...'
             : status === 'detecting'
               ? 'Analisando geometria do rosto...'
               : status === 'error'
-                ? 'Erro na análise'
+                ? 'Erro na analise'
                 : 'Pronto!'}
         </span>
       </div>
