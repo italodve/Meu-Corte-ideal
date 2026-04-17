@@ -87,19 +87,6 @@ export default function HomePage() {
           <p className="mt-3 max-w-xl text-brand-100 text-base sm:text-lg">
             Envie uma selfie e nossa IA detecta o formato do seu rosto para recomendar cortes que realmente combinam com você.
           </p>
-
-          {/* Face shape pills */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            {ALL_SHAPES.map((s) => (
-              <div
-                key={s}
-                className="flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-brand-100 backdrop-blur-sm"
-              >
-                <FaceShapeIcon shape={s} size={14} className="opacity-80" />
-                {FACE_SHAPE_LABELS[s]}
-              </div>
-            ))}
-          </div>
         </div>
       </header>
 
