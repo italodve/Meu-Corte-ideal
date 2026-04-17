@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Parâmetros inválidos' }, { status: 400 });
   }
 
-  const haircut = findHaircut(faceShape, gender, styleId);
+  const haircut = findHaircut(faceShape, gender, styleId, hairProfile.type);
   if (!haircut) {
     return NextResponse.json(
       { error: 'Corte não encontrado no catálogo' },
