@@ -266,9 +266,7 @@ export default function HomePage() {
         )}
       </main>
 
-      <footer className="border-t border-gray-100 bg-white px-4 py-6 text-center text-xs text-gray-400">
-        As imagens de cortes são geradas por IA (GPT Image 1 Mini) e servem apenas como referência visual.
-      </footer>
+      <footer className="border-t border-gray-100 bg-white px-4 py-6" />
     </div>
   );
 }
