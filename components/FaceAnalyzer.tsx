@@ -4,10 +4,15 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { loadFaceApi } from '@/lib/faceApi';
 import { classifyFaceShape, type FaceShapeResult } from '@/lib/faceShapeClassifier';
+import { detectAppearance, type DetectedAppearance } from '@/lib/hairColorDetector';
 
 interface FaceAnalyzerProps {
   imageDataUrl: string;
-  onResult: (result: FaceShapeResult, annotatedDataUrl: string) => void;
+  onResult: (
+    result: FaceShapeResult,
+    appearance: DetectedAppearance,
+    annotatedDataUrl: string,
+  ) => void;
   onError: (message: string) => void;
 }
 
@@ -58,6 +63,7 @@ export function FaceAnalyzer({ imageDataUrl, onResult, onError }: FaceAnalyzerPr
 
         const points = detections[0].landmarks.positions.map((p) => ({ x: p.x, y: p.y }));
         const result = classifyFaceShape(points);
+        const appearance = detectAppearance(img, points);
 
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
@@ -84,7 +90,7 @@ export function FaceAnalyzer({ imageDataUrl, onResult, onError }: FaceAnalyzerPr
 
         const annotated = canvas.toDataURL('image/jpeg', 0.9);
         setStatus('done');
-        onResult(result, canvas.toDataURL('image/jpeg', 0.9));
+        onResult(result, appearance, annotated);
       } catch (err) {
         if (!cancelled) {
           onError(err instanceof Error ? err.message : 'Erro desconhecido ao analisar a imagem.');

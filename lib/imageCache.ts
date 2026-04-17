@@ -16,10 +16,14 @@ export function setCachedImage(key: string, base64: string): void {
   cache.set(key, base64);
 }
 
+import type { HairProfile } from './hairProfile';
+
 export function buildCacheKey(
   shape: string,
   gender: string,
   styleId: string,
+  hairProfile: HairProfile,
 ): string {
-  return `${shape}:${gender}:${styleId}`;
+  const hp = `${hairProfile.type}|${hairProfile.color}|${hairProfile.volume}|${hairProfile.skinTone}`;
+  return `${shape}:${gender}:${styleId}:${hp}`;
 }
