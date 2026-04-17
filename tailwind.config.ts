@@ -8,9 +8,12 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
       colors: {
         brand: {
-          50: '#fff7ed',
+          50:  '#fff7ed',
           100: '#ffedd5',
           200: '#fed7aa',
           300: '#fdba74',
@@ -21,9 +24,6 @@ const config: Config = {
           800: '#9a3412',
           900: '#7c2d12',
         },
-      },
-      fontFamily: {
-        sans: ['"Segoe UI"', 'system-ui', 'sans-serif'],
       },
     },
   },
