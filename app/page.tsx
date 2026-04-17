@@ -241,10 +241,7 @@ export default function HomePage() {
             {/* Haircut recommendations */}
             <div>
               <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Cortes recomendados</h2>
-                  <p className="text-sm text-gray-500">Imagens geradas por IA ao carregar cada card.</p>
-                </div>
+                <h2 className="text-2xl font-bold text-gray-900">Cortes recomendados</h2>
                 <GenderToggle value={gender} onChange={setGender} />
               </div>
               <HaircutGrid shape={result.shape} gender={gender} hairProfile={hairProfile} />
