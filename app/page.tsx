@@ -7,11 +7,14 @@ import { FaceShapeResult } from '@/components/FaceShapeResult';
 import { FaceShapeIcon } from '@/components/FaceShapeIcon';
 import { GenderToggle } from '@/components/GenderToggle';
 import { HaircutGrid } from '@/components/HaircutGrid';
+import { HairProfileForm } from '@/components/HairProfileForm';
 import type { FaceShapeResult as FaceShapeResultType } from '@/lib/faceShapeClassifier';
+import type { DetectedAppearance } from '@/lib/hairColorDetector';
 import type { FaceShape, Gender } from '@/lib/faceShapes';
+import type { HairProfile } from '@/lib/hairProfile';
 import { FACE_SHAPE_LABELS } from '@/lib/faceShapes';
 
-type Phase = 'intro' | 'analyzing' | 'result' | 'error';
+type Phase = 'intro' | 'analyzing' | 'hair-profile' | 'result' | 'error';
 
 const ALL_SHAPES: FaceShape[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond'];
 
@@ -22,18 +25,32 @@ export default function HomePage() {
   const [result, setResult]     = useState<FaceShapeResultType | null>(null);
   const [error, setError]       = useState<string | null>(null);
   const [gender, setGender]     = useState<Gender>('masculino');
+  const [detected, setDetected] = useState<DetectedAppearance | null>(null);
+  const [hairProfile, setHairProfile] = useState<HairProfile | null>(null);
 
   function handleCapture(dataUrl: string) {
     setSelfie(dataUrl);
     setResult(null);
     setAnnotated(null);
     setError(null);
+    setDetected(null);
+    setHairProfile(null);
     setPhase('analyzing');
   }
 
-  function handleResult(r: FaceShapeResultType, annotatedDataUrl: string) {
+  function handleResult(
+    r: FaceShapeResultType,
+    appearance: DetectedAppearance,
+    annotatedDataUrl: string,
+  ) {
     setResult(r);
     setAnnotated(annotatedDataUrl);
+    setDetected(appearance);
+    setPhase('hair-profile');
+  }
+
+  function handleConfirmProfile(profile: HairProfile) {
+    setHairProfile(profile);
     setPhase('result');
   }
 
@@ -48,6 +65,8 @@ export default function HomePage() {
     setResult(null);
     setAnnotated(null);
     setError(null);
+    setDetected(null);
+    setHairProfile(null);
   }
 
   return (
@@ -172,6 +191,27 @@ export default function HomePage() {
           </div>
         )}
 
+        {/* ── HAIR PROFILE CONFIRMATION ── */}
+        {phase === 'hair-profile' && detected && result && (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 fade-up">
+            <div className="mb-6">
+              <h2 className="text-lg font-bold text-gray-900">Confirme seu perfil de cabelo</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Para gerar imagens que combinam com você, precisamos saber como é o seu cabelo e tom de pele.
+              </p>
+            </div>
+            <HairProfileForm
+              initial={{
+                type: 'liso',
+                volume: 'normal',
+                color: detected.hairColor,
+                skinTone: detected.skinTone,
+              }}
+              onConfirm={handleConfirmProfile}
+            />
+          </div>
+        )}
+
         {/* ── ERROR ── */}
         {phase === 'error' && (
           <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm sm:p-8 fade-up">
@@ -195,7 +235,7 @@ export default function HomePage() {
         )}
 
         {/* ── RESULT ── */}
-        {phase === 'result' && result && annotated && (
+        {phase === 'result' && result && annotated && hairProfile && (
           <div className="space-y-8 fade-up">
             {/* Face shape card */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
@@ -220,7 +260,7 @@ export default function HomePage() {
                 </div>
                 <GenderToggle value={gender} onChange={setGender} />
               </div>
-              <HaircutGrid shape={result.shape} gender={gender} />
+              <HaircutGrid shape={result.shape} gender={gender} hairProfile={hairProfile} />
             </div>
           </div>
         )}

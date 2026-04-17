@@ -4,31 +4,42 @@ import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import type { FaceShape, Gender } from '@/lib/faceShapes';
 import type { Haircut } from '@/lib/haircuts';
+import type { HairProfile } from '@/lib/hairProfile';
 
 interface Props {
   shape: FaceShape;
   gender: Gender;
   haircut: Haircut;
+  hairProfile: HairProfile;
 }
 
 type LoadState = 'idle' | 'loading' | 'ready' | 'error';
 
-function storageKey(shape: FaceShape, gender: Gender, id: string) {
-  return `haircut-img:${shape}:${gender}:${id}`;
+function profileTag(hp: HairProfile) {
+  return `${hp.type}|${hp.color}|${hp.volume}|${hp.skinTone}`;
 }
 
-async function doFetch(shape: FaceShape, gender: Gender, id: string): Promise<string> {
+function storageKey(shape: FaceShape, gender: Gender, id: string, hp: HairProfile) {
+  return `haircut-img:${shape}:${gender}:${id}:${profileTag(hp)}`;
+}
+
+async function doFetch(
+  shape: FaceShape,
+  gender: Gender,
+  id: string,
+  hairProfile: HairProfile,
+): Promise<string> {
   const res = await fetch('/api/generate-image', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ faceShape: shape, gender, styleId: id }),
+    body: JSON.stringify({ faceShape: shape, gender, styleId: id, hairProfile }),
   });
   const payload = await res.json();
   if (!res.ok) throw new Error(payload.error || 'Falha ao gerar imagem');
   return `data:image/png;base64,${payload.imageBase64}`;
 }
 
-export function HaircutCard({ shape, gender, haircut }: Props) {
+export function HaircutCard({ shape, gender, haircut, hairProfile }: Props) {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [state, setState] = useState<LoadState>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -42,14 +53,14 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
     setErrorMsg(null);
 
     try {
-      const cached = localStorage.getItem(storageKey(shape, gender, haircut.id));
+      const cached = localStorage.getItem(storageKey(shape, gender, haircut.id, hairProfile));
       if (cached) {
         setImageSrc(cached);
         setState('ready');
         triggeredRef.current = true;
       }
     } catch { /* ignore */ }
-  }, [shape, gender, haircut.id]);
+  }, [shape, gender, haircut.id, hairProfile]);
 
   useEffect(() => {
     if (!cardRef.current || triggeredRef.current) return;
@@ -69,16 +80,16 @@ export function HaircutCard({ shape, gender, haircut }: Props) {
     observer.observe(cardRef.current);
     return () => observer.disconnect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shape, gender, haircut.id]);
+  }, [shape, gender, haircut.id, hairProfile]);
 
   function load() {
     setState('loading');
     setErrorMsg(null);
-    doFetch(shape, gender, haircut.id)
+    doFetch(shape, gender, haircut.id, hairProfile)
       .then((url) => {
         setImageSrc(url);
         setState('ready');
-        try { localStorage.setItem(storageKey(shape, gender, haircut.id), url); } catch { /* quota */ }
+        try { localStorage.setItem(storageKey(shape, gender, haircut.id, hairProfile), url); } catch { /* quota */ }
       })
       .catch((err) => {
         setErrorMsg(err instanceof Error ? err.message : 'Erro ao gerar imagem');
