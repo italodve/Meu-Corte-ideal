@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function HaircutGrid({ shape, gender, hairProfile }: Props) {
-  const haircuts = getHaircuts(shape, gender);
+  const haircuts = getHaircuts(shape, gender, hairProfile.type);
   return (
     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {haircuts.map((h) => (
