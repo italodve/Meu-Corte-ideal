@@ -76,7 +76,8 @@ public/models/                 # pesos do face-api.js (bundlados)
 1. Crie um projeto novo no [Railway](https://railway.app/) conectando este
    repositório.
 2. Em **Variables**, adicione `OPENAI_API_KEY` com sua chave da OpenAI.
-3. O `railway.json` já configura `npm ci && npm run build` e `npm start`.
+3. O `railway.json` já configura `npm run build` e `npm start`.
+   O Nixpacks instala as dependências automaticamente antes do build.
    Railway injeta a variável `PORT` — o script `start` do `package.json` a
    respeita.
 4. Após o deploy, acesse a URL pública gerada.
