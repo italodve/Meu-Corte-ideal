@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { Gender } from '@/lib/faceShapes';
 import type { HairColor, HairProfile, HairType, HairVolume, SkinTone } from '@/lib/hairProfile';
 import {
   HAIR_COLORS,
@@ -15,7 +16,8 @@ import {
 
 interface Props {
   initial: HairProfile;
-  onConfirm: (profile: HairProfile) => void;
+  initialGender: Gender;
+  onConfirm: (profile: HairProfile, gender: Gender) => void;
 }
 
 const HAIR_TYPE_OPTIONS: { value: HairType; icon: string }[] = [
@@ -27,8 +29,14 @@ const HAIR_TYPE_OPTIONS: { value: HairType; icon: string }[] = [
 
 const HAIR_VOLUME_OPTIONS: HairVolume[] = ['fino', 'normal', 'volumoso'];
 
-export function HairProfileForm({ initial, onConfirm }: Props) {
+const GENDER_OPTIONS: { value: Gender; label: string; icon: string }[] = [
+  { value: 'masculino', label: 'Masculino', icon: '♂' },
+  { value: 'feminino',  label: 'Feminino',  icon: '♀' },
+];
+
+export function HairProfileForm({ initial, initialGender, onConfirm }: Props) {
   const [profile, setProfile] = useState<HairProfile>(initial);
+  const [gender, setGender] = useState<Gender>(initialGender);
 
   function set<K extends keyof HairProfile>(key: K, val: HairProfile[K]) {
     setProfile((p) => ({ ...p, [key]: val }));
@@ -41,6 +49,28 @@ export function HairProfileForm({ initial, onConfirm }: Props) {
           Detectamos automaticamente algumas características. Confirme ou ajuste antes de continuar.
         </p>
       </div>
+
+      {/* Gender */}
+      <fieldset>
+        <legend className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-3">Gênero dos cortes</legend>
+        <div className="flex gap-2">
+          {GENDER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => setGender(opt.value)}
+              className={`flex items-center gap-2 rounded-full border-2 px-5 py-2 text-sm font-semibold transition-all
+                ${gender === opt.value
+                  ? 'border-brand-500 bg-brand-50 text-brand-700'
+                  : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                }`}
+            >
+              <span className="text-base leading-none">{opt.icon}</span>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
       {/* Hair type */}
       <fieldset>
@@ -137,7 +167,7 @@ export function HairProfileForm({ initial, onConfirm }: Props) {
 
       <button
         type="button"
-        onClick={() => onConfirm(profile)}
+        onClick={() => onConfirm(profile, gender)}
         className="w-full rounded-full bg-brand-600 py-3 text-center font-semibold text-white shadow-md hover:bg-brand-700 active:scale-[0.98] transition-all"
       >
         Confirmar e ver cortes recomendados

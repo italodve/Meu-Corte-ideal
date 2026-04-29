@@ -1,22 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SelfieCapture } from '@/components/SelfieCapture';
 import { FaceAnalyzer } from '@/components/FaceAnalyzer';
 import { FaceShapeResult } from '@/components/FaceShapeResult';
-import { FaceShapeIcon } from '@/components/FaceShapeIcon';
-import { GenderToggle } from '@/components/GenderToggle';
 import { HaircutGrid } from '@/components/HaircutGrid';
 import { HairProfileForm } from '@/components/HairProfileForm';
 import type { FaceShapeResult as FaceShapeResultType } from '@/lib/faceShapeClassifier';
 import type { DetectedAppearance } from '@/lib/hairColorDetector';
-import type { FaceShape, Gender } from '@/lib/faceShapes';
+import type { Gender } from '@/lib/faceShapes';
 import type { HairProfile } from '@/lib/hairProfile';
-import { FACE_SHAPE_LABELS } from '@/lib/faceShapes';
 
 type Phase = 'intro' | 'analyzing' | 'hair-profile' | 'result' | 'error';
 
-const ALL_SHAPES: FaceShape[] = ['oval', 'round', 'square', 'heart', 'oblong', 'diamond'];
+const STORAGE_KEY = 'meu-corte-ideal:session';
+
+interface SavedSession {
+  result: FaceShapeResultType;
+  annotated: string;
+  hairProfile: HairProfile;
+  gender: Gender;
+}
+
+function loadSession(): SavedSession | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SavedSession;
+  } catch {
+    return null;
+  }
+}
+
+function saveSession(s: SavedSession) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  } catch { /* quota */ }
+}
+
+function clearSession() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch { /* ignore */ }
+}
 
 export default function HomePage() {
   const [phase, setPhase]       = useState<Phase>('intro');
@@ -27,6 +53,17 @@ export default function HomePage() {
   const [gender, setGender]     = useState<Gender>('masculino');
   const [detected, setDetected] = useState<DetectedAppearance | null>(null);
   const [hairProfile, setHairProfile] = useState<HairProfile | null>(null);
+
+  useEffect(() => {
+    const saved = loadSession();
+    if (saved) {
+      setResult(saved.result);
+      setAnnotated(saved.annotated);
+      setHairProfile(saved.hairProfile);
+      setGender(saved.gender);
+      setPhase('result');
+    }
+  }, []);
 
   function handleCapture(dataUrl: string) {
     setSelfie(dataUrl);
@@ -49,9 +86,16 @@ export default function HomePage() {
     setPhase('hair-profile');
   }
 
-  function handleConfirmProfile(profile: HairProfile) {
+  function handleConfirmProfile(profile: HairProfile, selectedGender: Gender) {
     setHairProfile(profile);
+    setGender(selectedGender);
     setPhase('result');
+    saveSession({
+      result: result!,
+      annotated: annotated!,
+      hairProfile: profile,
+      gender: selectedGender,
+    });
   }
 
   function handleError(message: string) {
@@ -67,6 +111,7 @@ export default function HomePage() {
     setError(null);
     setDetected(null);
     setHairProfile(null);
+    clearSession();
   }
 
   return (
@@ -194,6 +239,7 @@ export default function HomePage() {
                 color: detected.hairColor,
                 skinTone: detected.skinTone,
               }}
+              initialGender={gender}
               onConfirm={handleConfirmProfile}
             />
           </div>
@@ -240,10 +286,7 @@ export default function HomePage() {
 
             {/* Haircut recommendations */}
             <div>
-              <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-                <h2 className="text-2xl font-bold text-gray-900">Cortes recomendados</h2>
-                <GenderToggle value={gender} onChange={setGender} />
-              </div>
+              <h2 className="mb-5 text-2xl font-bold text-gray-900">Cortes recomendados</h2>
               <HaircutGrid shape={result.shape} gender={gender} hairProfile={hairProfile} />
             </div>
           </div>
