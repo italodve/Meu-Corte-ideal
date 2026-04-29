@@ -52,31 +52,6 @@ export function FaceShapeResult({ result, annotatedImage }: Props) {
         </div>
 
         <p className="leading-relaxed text-gray-700">{description}</p>
-
-        <details className="group rounded-xl border border-gray-200 bg-gray-50">
-          <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-sm font-medium text-gray-600 hover:text-gray-900 select-none">
-            Ver medidas da análise
-            <svg className="h-4 w-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </summary>
-          <div className="border-t border-gray-200 px-4 py-3">
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-              {([
-                ['Comprimento',        `${result.measurements.faceLength}px`],
-                ['Largura da testa',   `${result.measurements.foreheadWidth}px`],
-                ['Largura das maçãs',  `${result.measurements.cheekboneWidth}px`],
-                ['Largura do queixo',  `${result.measurements.jawWidth}px`],
-                ['Razão comp./larg.',  String(result.measurements.ratioLW)],
-              ] as [string, string][]).map(([k, v]) => (
-                <div key={k} className="contents">
-                  <dt className="text-gray-500">{k}</dt>
-                  <dd className="font-medium text-gray-800">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        </details>
       </div>
     </div>
   );
